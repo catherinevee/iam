@@ -1,6 +1,6 @@
 # AWS IAM Terraform Module
 
-A comprehensive Terraform module for managing AWS IAM resources including users, groups, roles, policies, and their relationships.
+A comprehensive Terraform module for managing AWS Identity and Access Management (IAM) resources including users, groups, roles, policies, and their relationships.
 
 ## Features
 
@@ -10,8 +10,8 @@ A comprehensive Terraform module for managing AWS IAM resources including users,
 - **IAM Policies**: Create and manage custom IAM policies
 - **User Group Memberships**: Manage user-group relationships
 - **Policy Attachments**: Attach policies to users, groups, and roles
-- **Access Keys**: Create and manage IAM access keys
-- **Login Profiles**: Create and manage IAM user login profiles
+- **Access Keys**: Generate access keys for programmatic access
+- **Login Profiles**: Create console login profiles for users
 - **Comprehensive Tagging**: Support for resource tagging
 - **Conditional Creation**: Enable/disable resource creation with boolean flags
 
@@ -31,18 +31,19 @@ module "iam" {
   users = {
     developer = {
       name = "developer"
-      path = "/users/"
+      path = "/developers/"
       tags = {
-        Environment = "production"
-        Role        = "developer"
+        Department = "Engineering"
+        Role       = "Developer"
       }
     }
     admin = {
       name = "admin"
-      path = "/users/"
+      path = "/admins/"
+      permissions_boundary = "arn:aws:iam::123456789012:policy/AdminBoundary"
       tags = {
-        Environment = "production"
-        Role        = "admin"
+        Department = "IT"
+        Role       = "Administrator"
       }
     }
   }
@@ -51,17 +52,33 @@ module "iam" {
     developers = {
       name = "developers"
       path = "/groups/"
-      tags = {
-        Environment = "production"
-        Team        = "development"
-      }
     }
     admins = {
       name = "admins"
       path = "/groups/"
+    }
+  }
+
+  roles = {
+    ec2_role = {
+      name = "EC2InstanceRole"
+      path = "/roles/"
+      description = "Role for EC2 instances to access S3"
+      assume_role_policy = jsonencode({
+        Version = "2012-10-17"
+        Statement = [
+          {
+            Action = "sts:AssumeRole"
+            Effect = "Allow"
+            Principal = {
+              Service = "ec2.amazonaws.com"
+            }
+          }
+        ]
+      })
       tags = {
-        Environment = "production"
-        Team        = "operations"
+        Service = "EC2"
+        Purpose = "InstanceRole"
       }
     }
   }
@@ -70,7 +87,6 @@ module "iam" {
     s3_read_only = {
       name        = "S3ReadOnlyPolicy"
       description = "Policy for read-only access to S3"
-      path        = "/policies/"
       policy = jsonencode({
         Version = "2012-10-17"
         Statement = [
@@ -81,39 +97,15 @@ module "iam" {
               "s3:ListBucket"
             ]
             Resource = [
-              "arn:aws:s3:::example-bucket",
-              "arn:aws:s3:::example-bucket/*"
+              "arn:aws:s3:::my-bucket",
+              "arn:aws:s3:::my-bucket/*"
             ]
           }
         ]
       })
       tags = {
-        Environment = "production"
-        Service     = "s3"
-      }
-    }
-  }
-
-  roles = {
-    ec2_role = {
-      name        = "EC2Role"
-      description = "Role for EC2 instances"
-      path        = "/roles/"
-      assume_role_policy = jsonencode({
-        Version = "2012-10-17"
-        Statement = [
-          {
-            Effect = "Allow"
-            Principal = {
-              Service = "ec2.amazonaws.com"
-            }
-            Action = "sts:AssumeRole"
-          }
-        ]
-      })
-      tags = {
-        Environment = "production"
-        Service     = "ec2"
+        Service = "S3"
+        Access  = "ReadOnly"
       }
     }
   }
@@ -138,7 +130,7 @@ module "iam" {
 
   tags = {
     Environment = "production"
-    Project     = "terraform-iam-module"
+    Project     = "my-project"
     ManagedBy   = "terraform"
   }
 }
@@ -155,34 +147,34 @@ module "iam_advanced" {
   create_login_profiles = true
 
   users = {
-    api_user = {
-      name = "api-user"
-      path = "/users/"
+    ci_user = {
+      name = "ci-user"
+      path = "/ci/"
       tags = {
+        Purpose = "CI/CD"
         Environment = "production"
-        Purpose     = "api-access"
       }
     }
   }
 
   access_keys = {
-    api_user_key = {
-      user_key = "api_user"
+    ci_access_key = {
+      user_key = "ci_user"
       status   = "Active"
     }
   }
 
   login_profiles = {
-    api_user_profile = {
-      user_key                = "api_user"
+    ci_login = {
+      user_key                = "ci_user"
       password_reset_required = true
-      password_length         = 20
+      password_length         = 32
     }
   }
 
   tags = {
     Environment = "production"
-    Project     = "api-service"
+    Purpose     = "CI/CD"
   }
 }
 ```
@@ -192,13 +184,13 @@ module "iam_advanced" {
 | Name | Version |
 |------|---------|
 | terraform | >= 1.0 |
-| aws | >= 5.0 |
+| aws | >= 4.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| aws | >= 5.0 |
+| aws | >= 4.0 |
 
 ## Inputs
 
@@ -260,38 +252,31 @@ module "iam_advanced" {
 ## Best Practices
 
 ### Security
-- Always use the principle of least privilege when creating IAM policies
-- Enable MFA for IAM users with console access
-- Use IAM roles instead of access keys when possible
-- Regularly rotate access keys
-- Use permissions boundaries to limit the scope of IAM policies
+
+1. **Use Permissions Boundaries**: Always define permissions boundaries for users and roles to limit their maximum permissions
+2. **Principle of Least Privilege**: Grant only the minimum permissions necessary for each role
+3. **Regular Access Reviews**: Implement processes to regularly review and audit IAM permissions
+4. **Use Roles Instead of Users**: Prefer IAM roles over IAM users for application access
+5. **Enable MFA**: Require multi-factor authentication for all IAM users
 
 ### Resource Organization
-- Use meaningful names for IAM resources
-- Organize resources using IAM paths (e.g., `/teams/`, `/services/`)
-- Apply consistent tagging across all resources
-- Use separate IAM users for different purposes
+
+1. **Use Paths**: Organize resources using IAM paths (e.g., `/developers/`, `/admins/`)
+2. **Consistent Naming**: Use consistent naming conventions across all IAM resources
+3. **Tagging Strategy**: Implement a comprehensive tagging strategy for cost tracking and resource management
 
 ### Policy Management
-- Create reusable policies and attach them to multiple users/groups/roles
-- Use policy conditions to restrict access based on context
-- Regularly review and audit IAM policies
-- Use AWS managed policies when appropriate
 
-### Module Usage
-- Enable only the resources you need using the control variables
-- Use consistent naming conventions across your infrastructure
-- Leverage the module outputs for integration with other modules
-- Test your IAM configurations in a non-production environment first
+1. **Custom Policies**: Create custom policies instead of using AWS managed policies when possible
+2. **Policy Versioning**: Use policy versioning to track changes
+3. **Policy Testing**: Test policies in a non-production environment before applying to production
 
 ## Examples
 
-See the `examples/` directory for additional usage examples:
+See the `examples/` directory for complete working examples:
 
 - `examples/basic/` - Basic IAM setup with users, groups, and policies
 - `examples/advanced/` - Advanced setup with roles, access keys, and login profiles
-- `examples/ec2/` - EC2-specific IAM configuration
-- `examples/lambda/` - Lambda function IAM configuration
 
 ## Contributing
 
@@ -303,7 +288,7 @@ See the `examples/` directory for additional usage examples:
 
 ## License
 
-This module is licensed under the MIT License. See LICENSE file for details.
+This module is licensed under the MIT License. See the LICENSE file for details.
 
 ## Support
 

@@ -1,22 +1,24 @@
-.PHONY: help init plan apply destroy validate fmt clean test
+.PHONY: help init plan apply destroy validate fmt lint clean test examples
 
 # Default target
 help:
-	@echo "Available commands:"
-	@echo "  init     - Initialize Terraform"
-	@echo "  plan     - Show Terraform plan"
-	@echo "  apply    - Apply Terraform changes"
-	@echo "  destroy  - Destroy Terraform resources"
-	@echo "  validate - Validate Terraform configuration"
-	@echo "  fmt      - Format Terraform code"
-	@echo "  clean    - Clean up Terraform files"
-	@echo "  test     - Run tests"
+	@echo "Available targets:"
+	@echo "  init      - Initialize Terraform"
+	@echo "  plan      - Plan Terraform changes"
+	@echo "  apply     - Apply Terraform changes"
+	@echo "  destroy   - Destroy Terraform resources"
+	@echo "  validate  - Validate Terraform configuration"
+	@echo "  fmt       - Format Terraform code"
+	@echo "  lint      - Lint Terraform code"
+	@echo "  clean     - Clean Terraform state and cache"
+	@echo "  test      - Run tests"
+	@echo "  examples  - Test examples"
 
 # Initialize Terraform
 init:
 	terraform init
 
-# Show Terraform plan
+# Plan Terraform changes
 plan:
 	terraform plan
 
@@ -36,38 +38,57 @@ validate:
 fmt:
 	terraform fmt -recursive
 
-# Clean up Terraform files
+# Lint Terraform code (requires tflint)
+lint:
+	@if command -v tflint >/dev/null 2>&1; then \
+		tflint --init; \
+		tflint; \
+	else \
+		echo "tflint not found. Install from https://github.com/terraform-linters/tflint"; \
+	fi
+
+# Clean Terraform state and cache
 clean:
-	rm -rf .terraform
-	rm -f .terraform.lock.hcl
-	rm -f terraform.tfstate
-	rm -f terraform.tfstate.backup
+	rm -rf .terraform .terraform.lock.hcl terraform.tfstate*
 
-# Run tests (placeholder for future test implementation)
+# Run tests (requires terratest)
 test:
-	@echo "Running tests..."
-	@echo "Tests not implemented yet"
+	@if [ -d "test" ]; then \
+		cd test && go test -v -timeout 30m; \
+	else \
+		echo "No tests found in test/ directory"; \
+	fi
 
-# Show current Terraform state
-state:
-	terraform show
+# Test examples
+examples:
+	@echo "Testing basic example..."
+	@cd examples/basic && terraform init && terraform validate
+	@echo "Testing advanced example..."
+	@cd examples/advanced && terraform init && terraform validate
+	@echo "All examples validated successfully!"
 
-# List Terraform resources
-list:
-	terraform state list
+# Security scan (requires terrascan)
+security-scan:
+	@if command -v terrascan >/dev/null 2>&1; then \
+		terrascan scan -i terraform; \
+	else \
+		echo "terrascan not found. Install from https://github.com/tenable/terrascan"; \
+	fi
 
-# Refresh Terraform state
-refresh:
-	terraform refresh
+# Documentation
+docs:
+	@echo "Generating documentation..."
+	@if command -v terraform-docs >/dev/null 2>&1; then \
+		terraform-docs markdown table . > README.md.tmp; \
+		echo "Documentation generated in README.md.tmp"; \
+	else \
+		echo "terraform-docs not found. Install from https://github.com/terraform-docs/terraform-docs"; \
+	fi
 
-# Output Terraform outputs
-output:
-	terraform output
+# Pre-commit checks
+pre-commit: fmt validate lint
+	@echo "Pre-commit checks completed successfully!"
 
-# Show Terraform version
-version:
-	terraform version
-
-# Show provider versions
-providers:
-	terraform providers 
+# CI/CD pipeline
+ci: init validate fmt lint security-scan
+	@echo "CI/CD pipeline completed successfully!" 

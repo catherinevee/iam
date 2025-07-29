@@ -22,14 +22,6 @@ resource "aws_iam_group" "this" {
 
   name = each.value.name
   path = try(each.value.path, "/")
-
-  tags = merge(
-    var.tags,
-    try(each.value.tags, {}),
-    {
-      Name = each.value.name
-    }
-  )
 }
 
 # IAM Roles

@@ -31,7 +31,6 @@ output "iam_groups" {
       name = v.name
       arn  = v.arn
       path = v.path
-      tags = v.tags
     }
   }
 }

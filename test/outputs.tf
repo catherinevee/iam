@@ -1,29 +1,29 @@
-output "test_users" {
-  description = "Test IAM users created"
-  value       = module.iam_test.iam_users
+output "test_user" {
+  description = "Test user created"
+  value       = module.iam_test.iam_users["test_user"]
 }
 
-output "test_groups" {
-  description = "Test IAM groups created"
-  value       = module.iam_test.iam_groups
+output "test_group" {
+  description = "Test group created"
+  value       = module.iam_test.iam_groups["test_group"]
 }
 
-output "test_roles" {
-  description = "Test IAM roles created"
-  value       = module.iam_test.iam_roles
+output "test_role" {
+  description = "Test role created"
+  value       = module.iam_test.iam_roles["test_role"]
 }
 
-output "test_policies" {
-  description = "Test IAM policies created"
-  value       = module.iam_test.iam_policies
+output "test_policy" {
+  description = "Test policy created"
+  value       = module.iam_test.iam_policies["test_policy"]
 }
 
-output "test_user_group_memberships" {
-  description = "Test user group memberships created"
-  value       = module.iam_test.user_group_memberships
+output "test_membership" {
+  description = "Test user group membership created"
+  value       = module.iam_test.user_group_memberships["test_membership"]
 }
 
-output "test_role_policy_attachments" {
-  description = "Test role policy attachments created"
-  value       = module.iam_test.role_policy_attachments
+output "test_attachment" {
+  description = "Test role policy attachment created"
+  value       = module.iam_test.role_policy_attachments["test_attachment"]
 } 

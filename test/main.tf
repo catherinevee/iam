@@ -1,10 +1,9 @@
 terraform {
   required_version = ">= 1.0"
-
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = ">= 5.0"
+      version = ">= 4.0"
     }
   }
 }
@@ -38,6 +37,26 @@ module "iam_test" {
     test_group = {
       name = "test-group"
       path = "/test/"
+    }
+  }
+
+  roles = {
+    test_role = {
+      name = "TestRole"
+      path = "/test/"
+      description = "Test role for validation"
+      assume_role_policy = jsonencode({
+        Version = "2012-10-17"
+        Statement = [
+          {
+            Action = "sts:AssumeRole"
+            Effect = "Allow"
+            Principal = {
+              Service = "ec2.amazonaws.com"
+            }
+          }
+        ]
+      })
       tags = {
         Environment = "test"
         Purpose     = "testing"
@@ -49,42 +68,19 @@ module "iam_test" {
     test_policy = {
       name        = "TestPolicy"
       description = "Test policy for validation"
-      path        = "/test/"
       policy = jsonencode({
         Version = "2012-10-17"
         Statement = [
           {
             Effect = "Allow"
             Action = [
+              "s3:GetObject",
               "s3:ListBucket"
             ]
             Resource = [
-              "arn:aws:s3:::test-bucket"
+              "arn:aws:s3:::test-bucket",
+              "arn:aws:s3:::test-bucket/*"
             ]
-          }
-        ]
-      })
-      tags = {
-        Environment = "test"
-        Purpose     = "testing"
-      }
-    }
-  }
-
-  roles = {
-    test_role = {
-      name        = "TestRole"
-      description = "Test role for validation"
-      path        = "/test/"
-      assume_role_policy = jsonencode({
-        Version = "2012-10-17"
-        Statement = [
-          {
-            Effect = "Allow"
-            Principal = {
-              Service = "lambda.amazonaws.com"
-            }
-            Action = "sts:AssumeRole"
           }
         ]
       })
@@ -111,7 +107,7 @@ module "iam_test" {
 
   tags = {
     Environment = "test"
-    Project     = "terraform-iam-test"
+    Project     = "iam-module-test"
     ManagedBy   = "terraform"
   }
 } 
