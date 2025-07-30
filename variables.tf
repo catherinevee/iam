@@ -169,3 +169,188 @@ variable "tags" {
   type        = map(string)
   default     = {}
 } 
+# ==============================================================================
+# Enhanced IAM Configuration Variables
+# ==============================================================================
+
+variable "enable_mfa" {
+  description = "Whether to enable MFA for IAM users"
+  type        = bool
+  default     = false
+}
+
+variable "require_mfa" {
+  description = "Whether to require MFA for IAM users"
+  type        = bool
+  default     = false
+}
+
+variable "enable_password_policy" {
+  description = "Whether to enable password policy"
+  type        = bool
+  default     = false
+}
+
+variable "password_policy" {
+  description = "Password policy configuration"
+  type = object({
+    minimum_password_length = optional(number, 8)
+    require_symbols = optional(bool, true)
+    require_numbers = optional(bool, true)
+    require_uppercase_characters = optional(bool, true)
+    require_lowercase_characters = optional(bool, true)
+    allow_users_to_change_password = optional(bool, true)
+    max_password_age = optional(number, 90)
+    password_reuse_prevention = optional(number, 24)
+    hard_expiry = optional(bool, false)
+  })
+  default = {}
+}
+
+variable "enable_account_password_policy" {
+  description = "Whether to enable account password policy"
+  type        = bool
+  default     = false
+}
+
+variable "enable_account_alias" {
+  description = "Whether to enable account alias"
+  type        = bool
+  default     = false
+}
+
+variable "account_alias" {
+  description = "Account alias name"
+  type        = string
+  default     = null
+}
+
+variable "enable_saml_provider" {
+  description = "Whether to enable SAML provider"
+  type        = bool
+  default     = false
+}
+
+variable "saml_provider" {
+  description = "SAML provider configuration"
+  type = object({
+    name = string
+    saml_metadata_document = string
+  })
+  default = null
+}
+
+variable "enable_oidc_provider" {
+  description = "Whether to enable OIDC provider"
+  type        = bool
+  default     = false
+}
+
+variable "oidc_provider" {
+  description = "OIDC provider configuration"
+  type = object({
+    url = string
+    client_id_list = list(string)
+    thumbprint_list = list(string)
+  })
+  default = null
+}
+
+variable "enable_service_linked_roles" {
+  description = "Whether to enable service linked roles"
+  type        = bool
+  default     = false
+}
+
+variable "service_linked_roles" {
+  description = "Service linked roles to create"
+  type = list(object({
+    aws_service_name = string
+    description = optional(string, null)
+    custom_suffix = optional(string, null)
+  }))
+  default = []
+}
+
+variable "enable_instance_profiles" {
+  description = "Whether to enable instance profiles"
+  type        = bool
+  default     = false
+}
+
+variable "instance_profiles" {
+  description = "Instance profiles to create"
+  type = map(object({
+    name = string
+    path = optional(string, /")
+    role = string
+    tags = optional(map(string), {})
+  }))
+  default = {}
+}
+
+variable "enable_openid_connect_providers" {
+  description = "Whether to enable OpenID Connect providers"
+  type        = bool
+  default     = false
+}
+
+variable "openid_connect_providers" {
+  description = "OpenID Connect providers to create"
+  type = map(object({
+    url = string
+    client_id_list = list(string)
+    thumbprint_list = list(string)
+  }))
+  default = {}
+}
+
+variable "enable_saml_providers" {
+  description = "Whether to enable SAML providers"
+  type        = bool
+  default     = false
+}
+
+variable "saml_providers" {
+  description = "SAML providers to create"
+  type = map(object({
+    name = string
+    saml_metadata_document = string
+  }))
+  default = {}
+}
+
+variable "enable_managed_policies" {
+  description = "Whether to enable managed policies"
+  type        = bool
+  default     = false
+}
+
+variable "managed_policies" {
+  description = "Managed policies to attach"
+  type = map(object({
+    name = string
+    arn = string
+    description = optional(string, null)
+  }))
+  default = {}
+}
+
+variable "enable_inline_policies" {
+  description = "Whether to enable inline policies"
+  type        = bool
+  default     = false
+}
+
+variable "inline_policies" {
+  description = "Inline policies to create"
+  type = map(object({
+    name = string
+    policy = string
+    users = optional(list(string), [])
+    groups = optional(list(string), [])
+    roles = optional(list(string), [])
+  }))
+  default = {}
+}
+
