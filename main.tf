@@ -43,6 +43,17 @@ resource "aws_iam_role" "this" {
       Name = each.value.name
     }
   )
+
+  lifecycle {
+    precondition {
+      condition     = length(each.value.name) <= 64
+      error_message = "IAM role name must not exceed 64 characters."
+    }
+    precondition {
+      condition     = can(jsonencode(each.value.assume_role_policy))
+      error_message = "The assume_role_policy must be a valid JSON document."
+    }
+  }
 }
 
 # IAM Policies

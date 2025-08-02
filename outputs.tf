@@ -1,6 +1,6 @@
 # IAM Users Outputs
 output "iam_users" {
-  description = "Map of IAM users created"
+  description = "Map of IAM users created (sensitive information redacted)"
   value = {
     for k, v in aws_iam_user.this : k => {
       name                 = v.name
@@ -11,6 +11,7 @@ output "iam_users" {
       tags                 = v.tags
     }
   }
+  sensitive = true
 }
 
 output "iam_user_names" {

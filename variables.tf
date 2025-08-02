@@ -59,7 +59,14 @@ variable "create_login_profiles" {
 }
 
 variable "users" {
-  description = "Map of IAM users to create"
+  description = <<-EOT
+    Map of IAM users to create. Each user can have the following attributes:
+    - name: The name of the IAM user (required)
+    - path: Path in which to create the user (default: "/")
+    - permissions_boundary: ARN of the policy that is used to set the permissions boundary
+    - force_destroy: Delete user even if it has non-Terraform-managed IAM access keys
+    - tags: Map of tags to assign to the user
+  EOT
   type = map(object({
     name                 = string
     path                 = optional(string, "/")
@@ -68,6 +75,12 @@ variable "users" {
     tags                 = optional(map(string), {})
   }))
   default = {}
+
+  validation {
+    condition     = alltrue([for k, v in var.users : can(regex("^[\\w+=,.@-]{1,64}$", v.name))])
+    error_message = "User names must consist of alphanumeric characters and/or [+=,.@-], max 64 characters."
+  }
+}
 }
 
 variable "groups" {
@@ -96,8 +109,32 @@ variable "roles" {
 }
 
 variable "policies" {
-  description = "Map of IAM policies to create"
+  description = <<-EOT
+    Map of IAM policies to create. Each policy requires:
+    - name: Policy name
+    - description: Policy description
+    - policy: Valid JSON policy document
+    - path: Path for the policy (optional)
+    - tags: Resource tags (optional)
+  EOT
   type = map(object({
+    name        = string
+    description = optional(string)
+    policy      = string
+    path        = optional(string, "/")
+    tags        = optional(map(string), {})
+  }))
+  default = {}
+
+  validation {
+    condition     = alltrue([for k, v in var.policies : length(v.policy) <= 6144])
+    error_message = "IAM policy documents must not exceed 6,144 characters."
+  }
+
+  validation {
+    condition     = alltrue([for k, v in var.policies : can(jsondecode(v.policy))])
+    error_message = "All policy documents must be valid JSON."
+  }
     name        = string
     path        = optional(string, "/")
     description = optional(string)

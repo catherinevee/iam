@@ -15,6 +15,106 @@ A comprehensive Terraform module for managing AWS Identity and Access Management
 - **Comprehensive Tagging**: Support for resource tagging
 - **Conditional Creation**: Enable/disable resource creation with boolean flags
 
+## Resource Map
+
+```mermaid
+graph TD
+    subgraph IAM Resources
+        U[IAM Users]
+        G[IAM Groups]
+        R[IAM Roles]
+        P[IAM Policies]
+        AK[Access Keys]
+        LP[Login Profiles]
+    end
+
+    subgraph Relationships
+        UG[User-Group Memberships]
+        RP[Role-Policy Attachments]
+        UP[User-Policy Attachments]
+        GP[Group-Policy Attachments]
+    end
+
+    %% User relationships
+    U --> UG
+    G --> UG
+    U --> UP
+    U --> AK
+    U --> LP
+
+    %% Group relationships
+    G --> GP
+
+    %% Role relationships
+    R --> RP
+
+    %% Policy relationships
+    P --> RP
+    P --> UP
+    P --> GP
+
+    %% Resource controls
+    C1[create_users] -.-> U
+    C2[create_groups] -.-> G
+    C3[create_roles] -.-> R
+    C4[create_policies] -.-> P
+    C5[create_access_keys] -.-> AK
+    C6[create_login_profiles] -.-> LP
+    
+    %% Relationship controls
+    C7[create_user_group_memberships] -.-> UG
+    C8[create_role_policy_attachments] -.-> RP
+    C9[create_user_policy_attachments] -.-> UP
+    C10[create_group_policy_attachments] -.-> GP
+
+    %% Styling
+    classDef resource fill:#f9f,stroke:#333,stroke-width:2px
+    classDef relationship fill:#bbf,stroke:#333,stroke-width:2px
+    classDef control fill:#ddd,stroke:#333,stroke-width:1px,stroke-dasharray: 5 5
+    
+    class U,G,R,P,AK,LP resource
+    class UG,RP,UP,GP relationship
+    class C1,C2,C3,C4,C5,C6,C7,C8,C9,C10 control
+```
+
+### Resource Types
+
+1. **Primary Resources**
+   - IAM Users: Individual identities
+   - IAM Groups: Collections of users
+   - IAM Roles: Assumable sets of permissions
+   - IAM Policies: Permission definitions
+   - Access Keys: Programmatic access credentials
+   - Login Profiles: Console access credentials
+
+2. **Relationship Resources**
+   - User-Group Memberships: Associates users with groups
+   - Role-Policy Attachments: Links policies to roles
+   - User-Policy Attachments: Links policies to users
+   - Group-Policy Attachments: Links policies to groups
+
+3. **Control Flags**
+   - Each resource type has an associated boolean flag
+   - Flags control whether resources of that type are created
+   - Allows for granular control of resource creation
+
+### Resource Dependencies
+
+- Users must exist before creating:
+  - User-Group Memberships
+  - User-Policy Attachments
+  - Access Keys
+  - Login Profiles
+
+- Groups must exist before:
+  - User-Group Memberships
+  - Group-Policy Attachments
+
+- Roles must exist before:
+  - Role-Policy Attachments
+
+- Policies must exist before any policy attachments
+
 ## Usage
 
 ### Basic Example
