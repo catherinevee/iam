@@ -1,6 +1,6 @@
-# IAM Users Outputs
+# User outputs - sensitive due to potential password/key information
 output "iam_users" {
-  description = "Map of IAM users created (sensitive information redacted)"
+  description = "Created users with metadata (passwords/keys redacted)"
   value = {
     for k, v in aws_iam_user.this : k => {
       name                 = v.name
@@ -15,18 +15,18 @@ output "iam_users" {
 }
 
 output "iam_user_names" {
-  description = "List of IAM user names"
+  description = "User names only - safe for use in other resources"
   value       = [for user in aws_iam_user.this : user.name]
 }
 
 output "iam_user_arns" {
-  description = "List of IAM user ARNs"
+  description = "User ARNs for policy references"
   value       = [for user in aws_iam_user.this : user.arn]
 }
 
-# IAM Groups Outputs
+# Group outputs
 output "iam_groups" {
-  description = "Map of IAM groups created"
+  description = "Created groups with metadata"
   value = {
     for k, v in aws_iam_group.this : k => {
       name = v.name
@@ -37,18 +37,18 @@ output "iam_groups" {
 }
 
 output "iam_group_names" {
-  description = "List of IAM group names"
+  description = "Group names for reference"
   value       = [for group in aws_iam_group.this : group.name]
 }
 
 output "iam_group_arns" {
-  description = "List of IAM group ARNs"
+  description = "Group ARNs for policy attachments"
   value       = [for group in aws_iam_group.this : group.arn]
 }
 
-# IAM Roles Outputs
+# Role outputs 
 output "iam_roles" {
-  description = "Map of IAM roles created"
+  description = "Created roles with full configuration"
   value = {
     for k, v in aws_iam_role.this : k => {
       name                   = v.name
@@ -65,18 +65,18 @@ output "iam_roles" {
 }
 
 output "iam_role_names" {
-  description = "List of IAM role names"
+  description = "Role names for service configurations"
   value       = [for role in aws_iam_role.this : role.name]
 }
 
 output "iam_role_arns" {
-  description = "List of IAM role ARNs"
+  description = "Role ARNs for assume role operations"
   value       = [for role in aws_iam_role.this : role.arn]
 }
 
-# IAM Policies Outputs
+# Policy outputs
 output "iam_policies" {
-  description = "Map of IAM policies created"
+  description = "Created custom policies with metadata"
   value = {
     for k, v in aws_iam_policy.this : k => {
       name        = v.name
@@ -90,18 +90,18 @@ output "iam_policies" {
 }
 
 output "iam_policy_names" {
-  description = "List of IAM policy names"
+  description = "Policy names for reference"
   value       = [for policy in aws_iam_policy.this : policy.name]
 }
 
 output "iam_policy_arns" {
-  description = "List of IAM policy ARNs"
+  description = "Policy ARNs for attachments"
   value       = [for policy in aws_iam_policy.this : policy.arn]
 }
 
-# IAM Access Keys Outputs
+# Access credentials - marked sensitive for security
 output "iam_access_keys" {
-  description = "Map of IAM access keys created"
+  description = "Access key data including secrets - handle with care"
   value = {
     for k, v in aws_iam_access_key.this : k => {
       user     = v.user
@@ -115,13 +115,13 @@ output "iam_access_keys" {
 }
 
 output "iam_access_key_ids" {
-  description = "List of IAM access key IDs"
+  description = "Access key IDs only - secrets available in sensitive output"
   value       = [for key in aws_iam_access_key.this : key.id]
 }
 
-# IAM User Login Profiles Outputs
+# Login profiles - passwords are sensitive
 output "iam_login_profiles" {
-  description = "Map of IAM user login profiles created"
+  description = "Console login data with encrypted passwords"
   value = {
     for k, v in aws_iam_user_login_profile.this : k => {
       user                    = v.user
@@ -133,9 +133,9 @@ output "iam_login_profiles" {
   sensitive = true
 }
 
-# User Group Memberships Outputs
+# Relationship outputs - useful for debugging and validation
 output "user_group_memberships" {
-  description = "Map of IAM user group memberships created"
+  description = "User-to-group assignments that were created"
   value = {
     for k, v in aws_iam_user_group_membership.this : k => {
       user   = v.user
@@ -144,9 +144,9 @@ output "user_group_memberships" {
   }
 }
 
-# Policy Attachments Outputs
+# Policy attachment tracking
 output "role_policy_attachments" {
-  description = "Map of IAM role policy attachments created"
+  description = "Role-to-policy links for reference"
   value = {
     for k, v in aws_iam_role_policy_attachment.this : k => {
       role       = v.role
@@ -156,7 +156,7 @@ output "role_policy_attachments" {
 }
 
 output "user_policy_attachments" {
-  description = "Map of IAM user policy attachments created"
+  description = "User-to-policy direct attachments"
   value = {
     for k, v in aws_iam_user_policy_attachment.this : k => {
       user       = v.user
@@ -166,7 +166,7 @@ output "user_policy_attachments" {
 }
 
 output "group_policy_attachments" {
-  description = "Map of IAM group policy attachments created"
+  description = "Group-to-policy attachments"
   value = {
     for k, v in aws_iam_group_policy_attachment.this : k => {
       group      = v.group

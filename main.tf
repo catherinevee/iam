@@ -1,4 +1,5 @@
-# IAM Users
+# Create IAM users with optional permissions boundaries
+# force_destroy allows deletion even with attached resources - use carefully
 resource "aws_iam_user" "this" {
   for_each = { for k, v in var.users : k => v if var.create_users }
 
@@ -16,7 +17,7 @@ resource "aws_iam_user" "this" {
   )
 }
 
-# IAM Groups
+# Groups for organizing users - better than individual policy attachments
 resource "aws_iam_group" "this" {
   for_each = { for k, v in var.groups : k => v if var.create_groups }
 
@@ -24,7 +25,7 @@ resource "aws_iam_group" "this" {
   path = try(each.value.path, "/")
 }
 
-# IAM Roles
+# Service roles - prefer these over user-based access for applications
 resource "aws_iam_role" "this" {
   for_each = { for k, v in var.roles : k => v if var.create_roles }
 
@@ -56,7 +57,7 @@ resource "aws_iam_role" "this" {
   }
 }
 
-# IAM Policies
+# Custom policies - avoid AWS managed policies when possible for better control
 resource "aws_iam_policy" "this" {
   for_each = { for k, v in var.policies : k => v if var.create_policies }
 
@@ -74,7 +75,7 @@ resource "aws_iam_policy" "this" {
   )
 }
 
-# IAM User Group Memberships
+# Link users to groups - handles dependencies automatically
 resource "aws_iam_user_group_membership" "this" {
   for_each = { for k, v in var.user_group_memberships : k => v if var.create_user_group_memberships }
 
@@ -87,7 +88,7 @@ resource "aws_iam_user_group_membership" "this" {
   ]
 }
 
-# IAM Role Policy Attachments
+# Attach custom policies to roles - references local policy keys
 resource "aws_iam_role_policy_attachment" "this" {
   for_each = { for k, v in var.role_policy_attachments : k => v if var.create_role_policy_attachments }
 
@@ -100,7 +101,7 @@ resource "aws_iam_role_policy_attachment" "this" {
   ]
 }
 
-# IAM User Policy Attachments
+# Direct policy attachment to users - use sparingly, prefer groups
 resource "aws_iam_user_policy_attachment" "this" {
   for_each = { for k, v in var.user_policy_attachments : k => v if var.create_user_policy_attachments }
 
@@ -113,7 +114,7 @@ resource "aws_iam_user_policy_attachment" "this" {
   ]
 }
 
-# IAM Group Policy Attachments
+# Attach policies to groups - preferred over individual user attachments
 resource "aws_iam_group_policy_attachment" "this" {
   for_each = { for k, v in var.group_policy_attachments : k => v if var.create_group_policy_attachments }
 
@@ -126,7 +127,7 @@ resource "aws_iam_group_policy_attachment" "this" {
   ]
 }
 
-# IAM Access Keys
+# Access keys for programmatic access - store secrets securely
 resource "aws_iam_access_key" "this" {
   for_each = { for k, v in var.access_keys : k => v if var.create_access_keys }
 
@@ -139,7 +140,7 @@ resource "aws_iam_access_key" "this" {
   ]
 }
 
-# IAM User Login Profiles
+# Console login profiles - forces password reset on first login by default
 resource "aws_iam_user_login_profile" "this" {
   for_each = { for k, v in var.login_profiles : k => v if var.create_login_profiles }
 
